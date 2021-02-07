@@ -1,0 +1,18 @@
+version: '3.2'
+services:
+    sql_server:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        hostname: SOFT
+        container_name: SOFT
+        ports:
+            - "1433:1433"
+        environment:
+            - ACCEPT_EULA=Y
+            - MSSQL_SA_PASSWORD=reallyStrongPwd#123
+        volumes: 
+            - ./data:/mssqldata
+        networks:
+            - dockersql-network
+networks: 
+    dockersql-network:
+        driver: bridge

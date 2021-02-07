@@ -1,0 +1,66 @@
+//Desafio Docker de utilização de imagem SQL e criação de tabela
+
+Modo 1 para baixar imagem SQL: 
+//abrir terminal e fazer o download do SQL Server 2019
+sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
+
+//após o download executar o banco de dados 
+sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=reallyStrongPwd#123" -p 1433:1433 --name LAC -d mcr.microsoft.com/mssql/server:2019-latest
+
+//para verificar se o banco de dados está sendo executado utilizar o comando
+sudo docker ps -a
+
+//para conectar o banco de dados então
+sudo docker exec -it LAC "bash"
+
+//conectando dentro do container 
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "reallyStrongPwd#123"
+//Fim Modo 1
+
+Modo 2 para baixar imagem SQL:
+docker-compose up
+//Fim Modo 2
+
+//Testar se o banco está rodando
+docker ps 
+
+//testar que está em branco o banco 
+SELECT @@version
+GO
+
+//Então criar a tabela passada no desafio 
+CRETA DATABASE DESAFIO
+GO 
+CREATE TABLE EDITORAS (ID SMALLINT PRIMARY KEY IDENTITY, NOME_EDITORA VARCHAR(50) NOT NULL )
+GO
+INSERT INTO EDITORAS (NOME_EDITORA) values (DESAFIO SOFTEXPERT)
+GO
+
+//Fazer backup do banco de dados e copiar o arquivo para o container
+cd /var/opt/mssql/data 
+
+//Apresenta o arquivo de backup
+ls -l 
+
+//Realizar a cópia do arquivo, antes sair do container
+exit 
+docker cp (idcontainer):/var/opt/mssql/data/master-202126-17-33-22.bak /users/diegooliveira/desktop/desafio
+
+//Dar stop no serviço e verificar que ele parou 
+docker ps -a 
+
+//Dar start novamente no container e verificar que está novamente "up"
+docker start (idcontainer)
+sudo docker exec -it LAC "bash"
+docker ps -a
+
+//Obs.: também pode ser dado o "start" via docker diretamente
+//Verificar que os dados não foram perdidos
+SELECT @@version
+GO 
+
+
+
+
+
+
