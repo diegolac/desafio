@@ -1,6 +1,7 @@
 //Desafio Docker de utilização de imagem SQL e criação de tabela
+//Diego Eduardo G. Caetano de Oliveira
 
-Modo 1 para baixar imagem SQL: 
+// baixar imagem SQL: 
 //abrir terminal e fazer o download do SQL Server 2019
 sudo docker pull mcr.microsoft.com/mssql/server:2019-latest
 
@@ -15,49 +16,56 @@ sudo docker exec -it LAC "bash"
 
 //conectando dentro do container 
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "reallyStrongPwd#123"
-//Fim Modo 1
 
-Modo 2 para baixar imagem SQL:
-docker-compose up
-//Fim Modo 2
-
-//Testar se o banco está rodando
-docker ps 
-
-//testar que está em branco o banco 
+//verificar que está em branco o banco de dados
 SELECT @@version
 GO
 
-//Então criar a tabela passada no desafio 
-CRETA DATABASE DESAFIO
+//Então criar um novo banco de dados e a tabela passada no desafio 
+CREATE DATABASE DESAFIO
 GO 
+USE DESAFIO
+GO
 CREATE TABLE EDITORAS (ID SMALLINT PRIMARY KEY IDENTITY, NOME_EDITORA VARCHAR(50) NOT NULL )
 GO
-INSERT INTO EDITORAS (NOME_EDITORA) values (DESAFIO SOFTEXPERT)
+INSERT INTO EDITORAS (NOME_EDITORA) values ("DESAFIO SOFTEXPERT")
+GO
+BACKUP DATABASE [DESAFIO] TO  DISK = N'/var/opt/mssql/data/desafio.bak' WITH NOFORMAT, NOINIT,  NAME = N'desafio', NOSKIP, REWIND, NOUNLOAD,  STATS = 10
 GO
 
 //Fazer backup do banco de dados e copiar o arquivo para o container
+control + c 
 cd /var/opt/mssql/data 
 
 //Apresenta o arquivo de backup
 ls -l 
 
-//Realizar a cópia do arquivo, antes sair do container
+//Adicionar permissão a todos os arquivos da pasta e realiza a cópia do arquivo, antes sair do container
+chmod -R 777 /var/opt/mssql/data
 exit 
-docker cp (idcontainer):/var/opt/mssql/data/master-202126-17-33-22.bak /users/diegooliveira/desktop/desafio
+docker ps -a
+docker cp (idcontainer)):/var/opt/mssql/data/desafio.bak /users/diegooliveira/desktop/desafio/data
 
 //Dar stop no serviço e verificar que ele parou 
 docker ps -a 
 
 //Dar start novamente no container e verificar que está novamente "up"
 docker start (idcontainer)
-sudo docker exec -it LAC "bash"
-docker ps -a
 
-//Obs.: também pode ser dado o "start" via docker diretamente
-//Verificar que os dados não foram perdidos
-SELECT @@version
-GO 
+docker cp desafio.bak (idcontainer)):/var/opt/mssql/data
+
+docker exec -u 0 LAC bash -c "chown mssql /var/opt/mssql/data/desafio.bak"
+
+docker exec -it LAC /bin/bash
+
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "reallyStrongPwd#123"
+
+//Obs.: também pode ser dado o "start" diretamente via docker
+//Fazer o restore e verificar que os dados não foram perdidos
+RESTORE DATABASE DESAFIO FROM  DISK = N'/var/opt/mssql/data/desafio.bak' WITH  REPLACE, MOVE N'DESAFIO'     TO N'/var/opt/mssql/data/desafio.mdf',  MOVE N'DESAFIO_log' TO N'/var/opt/mssql/data/desafio_log.ldf'
+GO
+
+//Conectar ao banco via SQL Server e verificar que os dados estão no banco
 
 
 
